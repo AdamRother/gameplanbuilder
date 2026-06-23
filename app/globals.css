@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* ── Document editor base ── */
+.doc-editor {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+  color: #2d3036;
+  outline: none;
+}
+
+.doc-editor h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+/* ── Print / PDF export ── */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
+  .print-only-doc {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 48px !important;
+    max-width: none !important;
+  }
+}
+
+/* ── Mic pulse animation ── */
+@keyframes mic-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.12); opacity: 0.85; }
+}
+.mic-pulse {
+  animation: mic-pulse 0.9s ease-in-out infinite;
+}
+
+/* ── Tab bar completed checkmark ── */
+.tab-check {
+  color: #B8962E;
+}
