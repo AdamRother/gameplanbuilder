@@ -8,7 +8,11 @@ import Generator from '@/components/Generator'
 import DocumentEditor from '@/components/DocumentEditor'
 import type { Framework } from '@/lib/types'
 
-const KEY_STORAGE = 'gp_anthropic_key'
+const KEY_STORAGE    = 'gp_anthropic_key'
+const FRAMEWORKS_KEY = 'gp_frameworks'
+const ACTIVE_FW_KEY  = 'gp_active_framework'
+const GAME_PLAN_KEY  = 'gp_game_plan'
+const TAB_KEY        = 'gp_active_tab'
 const GOLD = '#B8962E'
 const NAVY = '#1e3a5f'
 
@@ -23,13 +27,53 @@ export default function App() {
   const [showKeyValue, setShowKeyValue] = useState(false)
   const [keySaved, setKeySaved] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const hydrated = useRef(false)
 
+  // Load all persisted state on mount
   useEffect(() => {
     const stored = localStorage.getItem(KEY_STORAGE) ?? ''
     setApiKey(stored)
     setKeyInput(stored)
     setShowKeyBanner(!stored)
+
+    try {
+      const savedFrameworks = localStorage.getItem(FRAMEWORKS_KEY)
+      if (savedFrameworks) setFrameworks(JSON.parse(savedFrameworks))
+
+      const savedActiveId = localStorage.getItem(ACTIVE_FW_KEY)
+      if (savedActiveId) setActiveFrameworkId(savedActiveId)
+
+      const savedPlan = localStorage.getItem(GAME_PLAN_KEY)
+      if (savedPlan) setGamePlan(savedPlan)
+
+      const savedTab = localStorage.getItem(TAB_KEY)
+      if (savedTab) setActiveTab(Number(savedTab) as 1 | 2 | 3)
+    } catch {}
+
+    hydrated.current = true
   }, [])
+
+  // Persist state changes after hydration
+  useEffect(() => {
+    if (!hydrated.current) return
+    localStorage.setItem(FRAMEWORKS_KEY, JSON.stringify(frameworks))
+  }, [frameworks])
+
+  useEffect(() => {
+    if (!hydrated.current) return
+    if (activeFrameworkId) localStorage.setItem(ACTIVE_FW_KEY, activeFrameworkId)
+    else localStorage.removeItem(ACTIVE_FW_KEY)
+  }, [activeFrameworkId])
+
+  useEffect(() => {
+    if (!hydrated.current) return
+    localStorage.setItem(GAME_PLAN_KEY, gamePlan)
+  }, [gamePlan])
+
+  useEffect(() => {
+    if (!hydrated.current) return
+    localStorage.setItem(TAB_KEY, String(activeTab))
+  }, [activeTab])
 
   function saveKey() {
     const trimmed = keyInput.trim()
