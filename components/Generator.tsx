@@ -8,6 +8,7 @@ import type { Framework, GeneratorMode } from '@/lib/types'
 
 interface Props {
   framework: Framework
+  apiKey: string
   onGenerate: (text: string) => void
   onEditFramework: () => void
 }
@@ -15,7 +16,7 @@ interface Props {
 const GOLD = '#B8962E'
 const NAVY = '#1e3a5f'
 
-export default function Generator({ framework, onGenerate, onEditFramework }: Props) {
+export default function Generator({ framework, apiKey, onGenerate, onEditFramework }: Props) {
   const [mode, setMode] = useState<GeneratorMode>('transcript')
 
   return (
@@ -72,12 +73,14 @@ export default function Generator({ framework, onGenerate, onEditFramework }: Pr
       {mode === 'transcript' ? (
         <TranscriptMode
           framework={framework}
+          apiKey={apiKey}
           onGenerate={onGenerate}
           onEditFramework={onEditFramework}
         />
       ) : (
         <InterviewMode
           framework={framework}
+          apiKey={apiKey}
           onGenerate={onGenerate}
         />
       )}

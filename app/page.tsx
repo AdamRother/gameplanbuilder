@@ -1,17 +1,50 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { KeyRound, Check, Eye, EyeOff } from 'lucide-react'
 import TabBar from '@/components/TabBar'
 import FrameworkBuilder from '@/components/FrameworkBuilder'
 import Generator from '@/components/Generator'
 import DocumentEditor from '@/components/DocumentEditor'
 import type { Framework } from '@/lib/types'
 
+const KEY_STORAGE = 'gp_anthropic_key'
+const GOLD = '#B8962E'
+const NAVY = '#1e3a5f'
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<1 | 2 | 3>(1)
   const [frameworks, setFrameworks] = useState<Framework[]>([])
   const [activeFrameworkId, setActiveFrameworkId] = useState<string | null>(null)
   const [gamePlan, setGamePlan] = useState('')
+  const [apiKey, setApiKey] = useState('')
+  const [keyInput, setKeyInput] = useState('')
+  const [showKeyBanner, setShowKeyBanner] = useState(false)
+  const [showKeyValue, setShowKeyValue] = useState(false)
+  const [keySaved, setKeySaved] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const stored = localStorage.getItem(KEY_STORAGE) ?? ''
+    setApiKey(stored)
+    setKeyInput(stored)
+    setShowKeyBanner(!stored)
+  }, [])
+
+  function saveKey() {
+    const trimmed = keyInput.trim()
+    localStorage.setItem(KEY_STORAGE, trimmed)
+    setApiKey(trimmed)
+    setShowKeyBanner(false)
+    setKeySaved(true)
+    setTimeout(() => setKeySaved(false), 2000)
+  }
+
+  function openChange() {
+    setKeyInput(apiKey)
+    setShowKeyBanner(true)
+    setTimeout(() => inputRef.current?.focus(), 50)
+  }
 
   const activeFramework = frameworks.find(f => f.id === activeFrameworkId) ?? null
 
@@ -48,9 +81,72 @@ export default function App() {
   return (
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: '#f5f3ee' }}>
       <div className="no-print border-b bg-white" style={{ borderColor: '#e8e4d9' }}>
-        <div className="px-5 py-3">
-          <h1 className="text-[18px] font-bold" style={{ color: '#1e3a5f' }}>Game Plan Builder</h1>
+        <div className="px-5 py-3 flex items-center justify-between">
+          <h1 className="text-[18px] font-bold" style={{ color: NAVY }}>Game Plan Builder</h1>
+          {apiKey && !showKeyBanner && (
+            <button
+              onClick={openChange}
+              className="flex items-center gap-1.5 text-[12px] rounded-lg px-2.5 py-1 hover:bg-[#f3f0e9]"
+              style={{ color: '#9b9ea6' }}
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              {keySaved ? <><Check className="h-3 w-3" style={{ color: GOLD }} /> Saved</> : 'API Key'}
+            </button>
+          )}
         </div>
+
+        {/* API key banner */}
+        {showKeyBanner && (
+          <div className="border-t px-5 py-3" style={{ borderColor: '#e8e4d9', backgroundColor: '#fffdf7' }}>
+            <p className="text-[12px] font-semibold mb-2" style={{ color: NAVY }}>
+              {apiKey ? 'Update your Anthropic API Key' : 'Enter your Anthropic API Key to get started'}
+            </p>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  ref={inputRef}
+                  type={showKeyValue ? 'text' : 'password'}
+                  value={keyInput}
+                  onChange={e => setKeyInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && saveKey()}
+                  placeholder="sk-ant-api03-..."
+                  className="w-full rounded-xl border px-3 py-2 text-[13px] pr-9 focus:outline-none"
+                  style={{ borderColor: '#e8e4d9', color: '#2d3036', backgroundColor: 'white' }}
+                  onFocus={e => (e.currentTarget.style.borderColor = GOLD)}
+                  onBlur={e => (e.currentTarget.style.borderColor = '#e8e4d9')}
+                />
+                <button
+                  onClick={() => setShowKeyValue(v => !v)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2"
+                  style={{ color: '#c8cad0' }}
+                >
+                  {showKeyValue ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+              <button
+                onClick={saveKey}
+                disabled={!keyInput.trim()}
+                className="rounded-xl px-4 py-2 text-[13px] font-semibold text-white disabled:opacity-40"
+                style={{ backgroundColor: GOLD }}
+              >
+                Save
+              </button>
+              {apiKey && (
+                <button
+                  onClick={() => setShowKeyBanner(false)}
+                  className="rounded-xl px-3 py-2 text-[13px]"
+                  style={{ color: '#9b9ea6' }}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+            <p className="text-[11px] mt-1.5" style={{ color: '#c8cad0' }}>
+              Your key is stored only in your browser and never sent to us.
+            </p>
+          </div>
+        )}
+
         <TabBar
           activeTab={activeTab}
           frameworkSaved={!!activeFramework}
@@ -73,6 +169,7 @@ export default function App() {
           {activeFramework && (
             <Generator
               framework={activeFramework}
+              apiKey={apiKey}
               onGenerate={handleGenerate}
               onEditFramework={() => setActiveTab(1)}
             />

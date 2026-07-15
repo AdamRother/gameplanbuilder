@@ -9,6 +9,7 @@ import type { Framework } from '@/lib/types'
 
 interface Props {
   framework: Framework
+  apiKey: string
   onGenerate: (text: string) => void
   onEditFramework: () => void
 }
@@ -16,7 +17,7 @@ interface Props {
 const GOLD = '#B8962E'
 const NAVY = '#1e3a5f'
 
-export default function TranscriptMode({ framework, onGenerate, onEditFramework }: Props) {
+export default function TranscriptMode({ framework, apiKey, onGenerate, onEditFramework }: Props) {
   const [transcript, setTranscript] = useState('')
   const [notes, setNotes] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
@@ -50,7 +51,7 @@ export default function TranscriptMode({ framework, onGenerate, onEditFramework 
       const res = await fetch('/api/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ system, userMessage }),
+        body: JSON.stringify({ system, userMessage, apiKey }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Generation failed')

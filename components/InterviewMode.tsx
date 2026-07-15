@@ -9,6 +9,7 @@ import type { Framework, InterviewAnswers } from '@/lib/types'
 
 interface Props {
   framework: Framework
+  apiKey: string
   onGenerate: (text: string) => void
 }
 
@@ -106,7 +107,7 @@ function Spinner() {
   )
 }
 
-export default function InterviewMode({ framework, onGenerate }: Props) {
+export default function InterviewMode({ framework, apiKey, onGenerate }: Props) {
   const [started, setStarted] = useState(false)
   const [answers, setAnswers] = useState<InterviewAnswers>(EMPTY_ANSWERS)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -226,7 +227,7 @@ export default function InterviewMode({ framework, onGenerate }: Props) {
       const res = await fetch('/api/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ system, userMessage }),
+        body: JSON.stringify({ system, userMessage, apiKey }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Generation failed')

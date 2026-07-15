@@ -1,19 +1,19 @@
 import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: 'ANTHROPIC_API_KEY is not set in .env.local' },
-      { status: 500 }
-    )
-  }
-
-  let body: { system: string; userMessage: string }
+  let body: { system: string; userMessage: string; apiKey?: string }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const apiKey = body.apiKey || process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    return NextResponse.json(
+      { error: 'No API key provided. Enter your Anthropic API key at the top of the page.' },
+      { status: 401 }
+    )
   }
 
   const { system, userMessage } = body
